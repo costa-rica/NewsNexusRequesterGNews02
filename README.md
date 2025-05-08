@@ -29,7 +29,6 @@ This methodical approach ensures comprehensive and prioritized coverage of query
 
 - requests url a limited to 270 characters
   - based on warning provided by GNews response
-  - removing end date from url
   - we are using 270 as our character limit parameter, but it renders urls with a total length of 370 characters including the `https://gnews.io/api/v4/search?` and so on ...
 - failed requests are saved in .json with masterIndex to keep uniqueness
 

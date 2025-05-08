@@ -9,7 +9,7 @@ const {
 } = require("./utilitiesReadAndMakeFiles");
 const { checkRequestAndModifyDates } = require("./utilitiesMisc");
 
-async function requester(requestParametersObject, masterIndex) {
+async function requester(requestParametersObject, indexMaster) {
   // Step 1: prepare paramters
   const requestWindowInDays = 10; // how many days from startDate to endDate
   const andString = requestParametersObject.andString;
