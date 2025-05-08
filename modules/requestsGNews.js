@@ -144,41 +144,6 @@ async function makeGNewsApiRequestDetailed(
 
   const requestUrl = `${sourceObj.url}search?${queryParams.join("&")}`;
 
-  // // ---------- OLD CODE ----------
-  // let queryParams = [];
-
-  // const andPart = andArray.length > 0 ? andArray.join(" AND ") : "";
-  // const orPart = orArray.length > 0 ? `(${orArray.join(" OR ")})` : "";
-  // const notPart =
-  //   notArray.length > 0 ? notArray.map((k) => `NOT ${k}`).join(" AND ") : "";
-
-  // const fullQuery = [andPart, orPart, notPart].filter(Boolean).join(" AND ");
-  // if (fullQuery) {
-  //   queryParams.push(`q=${encodeURIComponent(fullQuery)}`);
-  // }
-
-  // if (startDate) {
-  //   const formattedStartDate = new Date(startDate)
-  //     .toISOString()
-  //     .replace(".000", "");
-  //   queryParams.push(`from=${formattedStartDate}`);
-  // }
-
-  // if (endDate) {
-  //   const formattedEndDate = new Date(endDate)
-  //     .toISOString()
-  //     .replace(".000", "");
-  //   queryParams.push(`to=${formattedEndDate}`);
-  // }
-  // queryParams.push(`max=100`);
-
-  // // Always required
-  // queryParams.push("lang=en");
-  // queryParams.push("country=us");
-  // queryParams.push(`apikey=${sourceObj.apiKey}`);
-
-  // const requestUrl = `${sourceObj.url}search?${queryParams.join("&")}`;
-
   let status = "success";
   let requestResponseData = null;
   let newsApiRequestObj = null;
@@ -203,7 +168,8 @@ async function makeGNewsApiRequestDetailed(
           (e) =>
             e.toLowerCase().includes("request was blocked") ||
             e.toLowerCase().includes("too many requests") ||
-            e.toLowerCase().includes("quota")
+            e.toLowerCase().includes("quota") ||
+            e.toLowerCase().includes("request limit")
         )
       ) {
         console.log(
@@ -232,9 +198,7 @@ async function makeGNewsApiRequestDetailed(
     console.log(` 🚧 ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES is false`);
     newsApiRequestObj = requestUrl;
   }
-  // console.log(
-  //   `NewsApiRequest.id: ${newsApiRequestObj.id}, Dates of request: ${startDate} - ${endDate}, article count: ${requestResponseData.articles?.length}`
-  // );
+
   console.log(`requestUrl: ${requestUrl}`);
 
   return { requestResponseData, newsApiRequestObj };
@@ -295,7 +259,6 @@ async function storeGNewsArticles(requestResponseData, newsApiRequestObj) {
 }
 
 function buildQueryWithinLimit(andArray, orArray, notArray, maxLength = 200) {
-  console.log("- in buildQueryWithinLimit");
   const andPart = andArray.length > 0 ? andArray.join(" AND ") : "";
   const orPart = orArray.length > 0 ? `(${orArray.join(" OR ")})` : "";
 
