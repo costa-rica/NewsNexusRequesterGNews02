@@ -128,7 +128,8 @@ async function makeGNewsApiRequestDetailed(
   queryParams.push("lang=en", "country=us", `apikey=${sourceObj.apiKey}`);
 
   const lengthOfQueryParams = queryParams.join("&").length;
-  const maxLength = 270 - lengthOfQueryParams;
+  const maxLength =
+    process.env.MAX_LENGTH_OF_QUERY_PARAMS - lengthOfQueryParams;
 
   const queryWithinLimit = buildQueryWithinLimit(
     andArray,
