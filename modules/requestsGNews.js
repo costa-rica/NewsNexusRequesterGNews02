@@ -7,7 +7,10 @@ const {
 const {
   writeResponseDataFromNewsAggregator,
 } = require("./utilitiesReadAndMakeFiles");
-const { checkRequestAndModifyDates } = require("./utilitiesMisc");
+const {
+  checkRequestAndModifyDates,
+  runSemanticScorer,
+} = require("./utilitiesMisc");
 
 async function requester(requestParametersObject, indexMaster) {
   // Step 1: prepare paramters
@@ -175,6 +178,7 @@ async function makeGNewsApiRequestDetailed(
         console.log(
           `--> ⛔ Ending process: rate limited by ${process.env.NAME_OF_ORG_REQUESTING_FROM}`
         );
+        await runSemanticScorer();
         process.exit(1);
       }
       return { requestResponseData, newsApiRequestObj };

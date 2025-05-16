@@ -6,6 +6,7 @@ const {
 const {
   createArraysOfParametersNeverRequestedAndRequested,
   findEndDateToQueryParameters,
+  runSemanticScorer,
 } = require("./modules/utilitiesMisc");
 const { requester } = require("./modules/requestsGNews");
 
@@ -90,6 +91,7 @@ async function main() {
       console.log(
         `--- End due to indexMaster > ${process.env.LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP} ---`
       );
+      await runSemanticScorer();
       break;
     }
 
@@ -100,6 +102,7 @@ async function main() {
       dateEndOfRequest === new Date().toISOString().split("T")[0]
     ) {
       console.log(`--- [End process] All GNews queries updated ---`);
+      await runSemanticScorer();
       break;
     }
 

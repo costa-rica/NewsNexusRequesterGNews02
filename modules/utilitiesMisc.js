@@ -2,6 +2,7 @@ const {
   NewsApiRequest,
   NewsArticleAggregatorSource,
 } = require("newsnexus07db");
+const { exec } = require("child_process");
 
 async function createArraysOfParametersNeverRequestedAndRequested(
   queryObjects
@@ -127,8 +128,43 @@ async function findEndDateToQueryParameters(queryParameters) {
   }
 }
 
+async function runSemanticScorer() {
+  console.log(
+    `Starting child process: ${process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER}`
+  );
+  return new Promise((resolve, reject) => {
+    exec(
+      `node "${process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER}"`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing child process: ${error.message}`);
+          return reject(error);
+        }
+        if (stderr) {
+          console.error(`Child process stderr: ${stderr}`);
+        }
+        console.log(`Child process finished`);
+        resolve(stdout);
+      }
+    );
+  })
+    .then(() => {
+      console.log(
+        " [NewsNexusRequesterNewsDataIo01] ✅ NewsNexusSemanticScorer02 has finished."
+      );
+      process.exit();
+    })
+    .catch(() => {
+      console.log(
+        " [NewsNexusRequesterNewsDataIo01] ❌ NewsNexusSemanticScorer02 has finished with error."
+      );
+      process.exit(1);
+    });
+}
+
 module.exports = {
   createArraysOfParametersNeverRequestedAndRequested,
   checkRequestAndModifyDates,
   findEndDateToQueryParameters,
+  runSemanticScorer,
 };
