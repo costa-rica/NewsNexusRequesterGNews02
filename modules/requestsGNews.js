@@ -263,17 +263,30 @@ async function storeGNewsArticles(requestResponseData, newsApiRequestObj) {
 }
 
 function buildQueryWithinLimit(andArray, orArray, notArray, maxLength = 200) {
-  const andPart = andArray.length > 0 ? andArray.join(" AND ") : "";
-  const orPart = orArray.length > 0 ? `(${orArray.join(" OR ")})` : "";
+  // sanitize terms strip quotes if logical operator inside
+  const sanitizeTerm = (term) => {
+    const trimmed = term.trim();
+    const containsLogicOps = /\b(AND|OR|NOT)\b/.test(trimmed.toUpperCase());
+    if (trimmed.startsWith('"') && trimmed.endsWith('"') && containsLogicOps) {
+      return trimmed.slice(1, -1); // strip quotes if logical operator inside
+    }
+    return trimmed; // keep quotes for phrases like "home fire"
+  };
+  const andPart =
+    andArray.length > 0 ? andArray.map(sanitizeTerm).join(" AND ") : "";
+  const orPart =
+    orArray.length > 0 ? `(${orArray.map(sanitizeTerm).join(" OR ")})` : "";
+  // const notParts = [];
 
   let baseQuery = [andPart, orPart].filter(Boolean).join(" AND ");
   let currentLength = baseQuery.length;
   let notParts = [];
 
   for (const notTerm of notArray) {
-    const nextClause = ` AND NOT ${notTerm}`;
+    const cleanTerm = sanitizeTerm(notTerm);
+    const nextClause = ` AND NOT ${cleanTerm}`;
     if (currentLength + nextClause.length <= maxLength) {
-      notParts.push(`NOT ${notTerm}`);
+      notParts.push(`NOT ${cleanTerm}`);
       currentLength += nextClause.length;
     } else {
       break;
