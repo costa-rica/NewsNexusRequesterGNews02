@@ -34,22 +34,51 @@ This methodical approach ensures comprehensive and prioritized coverage of query
 
 ## Requirements
 
-This app requires importing or adding the `newsnexus07db` package, which provides the Sequelize setup and model definitions needed to read and write to the `NewsApiRequests` table.
+This app requires importing or adding the `newsnexus10db` package, which provides the Sequelize setup and model definitions needed to read and write to the `NewsApiRequests` table.
 
 ## Environment Variables
 
 - `PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED`: Path to the Excel file containing the query parameters.
-- Need database connection variables as well for the NewsNexus07Db package.
+- Need database connection variables as well for the NewsNexus10Db package.
 
 ### Example of necessary environment variables
 
-```env
-APP_NAME=NewsNexusRequesterGNews02
-NAME_DB=newsnexus07.db
+#### workstation
+
+```
+NAME_APP=NewsNexusRequesterGNews02
+NAME_DB=newsnexus10.db
+PATH_DATABASE=/Users/nick/_databases/NewsNexus10/
+PATH_PROJECT_RESOURCES=/Users/nick/Documents/_project_resources/NewsNexus10
+PATH_PROJECT_RESOURCES_REPORTS=/Users/nick/Documents/_project_resources/NewsNexus10/reports
+PATH_TO_API_RESPONSE_JSON_FILES=/Users/nick/Documents/_project_resources/NewsNexus10/api_response_json_files
+PATH_PROJECT_RESOURCES_UTILITIES=/Users/nick/Documents/_project_resources/NewsNexus10/utilities
+PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED=/Users/nick/Documents/_project_resources/NewsNexus10/utilities/automation_excel_files/AutomatedRequestsGNews.xlsx
+PATH_AND_FILENAME_TO_SEMANTIC_SCORER=/Users/nick/Documents/NewsNexusSemanticScorer02/index.js
+PATH_TO_SEMANTIC_SCORER_DIR=/Users/nick/Documents/_project_resources/NewsNexus10/utilities/semantic_scorer
+PATH_TO_SEMANTIC_SCORER_KEYWORDS_EXCEL_FILE=/Users/nick/Documents/_project_resources/NewsNexus10/utilities/semantic_scorer/NewsNexusSemanticScorerKeywords.xlsx
 ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES=true
-PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED=/Users/nick/Documents/_project_resources/NewsNexus07/utilities/GNewsRequestsAutomated.xlsx
-PATH_TO_API_RESPONSE_JSON_FILES=/Users/nick/Documents/_project_resources/NewsNexus07/api_response_json_files
-ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES=false
+NAME_OF_ORG_REQUESTING_FROM=GNews
+LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP=200
+MILISECONDS_IN_BETWEEN_REQUESTS=1100
+MAX_LENGTH_OF_QUERY_PARAMS=250
+```
+
+#### ubuntu server
+
+```
+NAME_APP=NewsNexusRequesterGNews02
+NAME_DB=newsnexus10.db
+PATH_DATABASE=/home/nick/databases/NewsNexus10/
+PATH_PROJECT_RESOURCES=/home/nick/project_resources/NewsNexus10
+PATH_PROJECT_RESOURCES_REPORTS=/home/nick/project_resources/NewsNexus10/reports
+PATH_TO_API_RESPONSE_JSON_FILES=/home/nick/project_resources/NewsNexus10/api_response_json_files
+PATH_PROJECT_RESOURCES_UTILITIES=/home/nick/project_resources/NewsNexus10/utilities
+PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED=/home/nick/project_resources/NewsNexus10/utilities/automation_excel_files/AutomatedRequestsGNews.xlsx
+PATH_AND_FILENAME_TO_SEMANTIC_SCORER=/home/nick/applications/NewsNexusSemanticScorer02/index.js
+PATH_TO_SEMANTIC_SCORER_DIR=/home/nick/project_resources/NewsNexus10/utilities/semantic_scorer
+PATH_TO_SEMANTIC_SCORER_KEYWORDS_EXCEL_FILE=/home/nick/project_resources/NewsNexus10/utilities/semantic_scorer/NewsNexusSemanticScorerKeywords.xlsx
+ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES=true
 NAME_OF_ORG_REQUESTING_FROM=GNews
 LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP=200
 MILISECONDS_IN_BETWEEN_REQUESTS=1100

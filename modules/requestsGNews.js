@@ -3,7 +3,7 @@ const {
   NewsApiRequest,
   EntityWhoFoundArticle,
   NewsArticleAggregatorSource,
-} = require("newsnexus07db");
+} = require("newsnexus10db");
 const {
   writeResponseDataFromNewsAggregator,
 } = require("./utilitiesReadAndMakeFiles");

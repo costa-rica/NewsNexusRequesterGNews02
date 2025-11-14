@@ -13,7 +13,7 @@ const { requester } = require("./modules/requestsGNews");
 console.log(
   `--------------------------------------------------------------------------------`
 );
-console.log(`- Start ${process.env.APP_NAME} ${new Date().toISOString()} --`);
+console.log(`- Start ${process.env.NAME_APP} ${new Date().toISOString()} --`);
 console.log(
   `MILISECONDS_IN_BETWEEN_REQUESTS: ${process.env.MILISECONDS_IN_BETWEEN_REQUESTS}`
 );

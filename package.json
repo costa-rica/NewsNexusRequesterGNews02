@@ -11,7 +11,7 @@
   "description": "",
   "dependencies": {
     "dotenv": "^16.5.0",
-    "newsnexus07db": "file:../NewsNexus07Db",
+    "newsnexus10db": "file:../NewsNexus10Db",
     "xlsx": "^0.18.5"
   }
 }
