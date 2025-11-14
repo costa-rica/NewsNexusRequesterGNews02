@@ -48,7 +48,7 @@ This app requires importing or adding the `newsnexus10db` package, which provide
 ```
 NAME_APP=NewsNexusRequesterGNews02
 NAME_DB=newsnexus10.db
-PATH_DATABASE=/Users/nick/_databases/NewsNexus10/
+PATH_DATABASE=/Users/nick/Documents/_databases/NewsNexus10/
 PATH_PROJECT_RESOURCES=/Users/nick/Documents/_project_resources/NewsNexus10
 PATH_PROJECT_RESOURCES_REPORTS=/Users/nick/Documents/_project_resources/NewsNexus10/reports
 PATH_TO_API_RESPONSE_JSON_FILES=/Users/nick/Documents/_project_resources/NewsNexus10/api_response_json_files
