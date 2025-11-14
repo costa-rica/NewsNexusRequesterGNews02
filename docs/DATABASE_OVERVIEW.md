@@ -34,6 +34,78 @@ NewsNexus10Db/
 └── package.json                 # Project configuration
 ```
 
+### Using This Package in Your Application
+
+**IMPORTANT: Models must be initialized before use.**
+
+When consuming this package in a microservice or application, you MUST call `initModels()` at the very start of your application, before importing any other modules that use the database models.
+
+#### Initialization Pattern
+
+```javascript
+require("dotenv").config();
+
+// Step 1: Initialize models FIRST, before any other imports
+const { initModels, sequelize } = require("newsnexus10db");
+initModels();
+
+// Step 2: Now import other modules that use the models
+const { myFunction } = require("./modules/myModule");
+const { anotherFunction } = require("./modules/anotherModule");
+
+// Step 3: (Optional) Sync database schema if tables don't exist
+async function main() {
+  await sequelize.sync(); // Creates tables if they don't exist
+
+  // Your application logic here
+}
+
+main();
+```
+
+#### Why This Order Matters
+
+- `initModels()` calls all model initialization functions (e.g., `initArticle()`, `initUser()`, etc.)
+- It then calls `applyAssociations()` to set up all model relationships
+- Models are unusable until this initialization completes
+- If you try to use models before calling `initModels()`, you'll get errors like:
+  - `TypeError: Cannot read properties of undefined (reading 'constructor')`
+  - `TypeError: Cannot read properties of undefined (reading 'sequelize')`
+
+#### Environment Variables
+
+The package inherits environment variables from the consuming application. No `.env` file is needed in the package itself.
+
+Required environment variables:
+
+- `PATH_DATABASE`: Directory path for the database file (e.g., `/Users/nick/_databases/NewsNexus10/`)
+- `NAME_DB`: Database filename (e.g., `newsnexus10.db`)
+
+#### Creating Database Schema
+
+If your database is new or missing tables, use `sequelize.sync()`:
+
+```javascript
+// Creates all tables based on model definitions
+await sequelize.sync();
+
+// Or with options:
+await sequelize.sync({ alter: true }); // Updates existing tables to match models
+await sequelize.sync({ force: true }); // WARNING: Drops all tables first
+```
+
+#### Using Models
+
+After initialization, import and use models normally:
+
+```javascript
+const { Article, NewsApiRequest, User } = require("newsnexus10db");
+
+// Query examples
+const articles = await Article.findAll({ limit: 10 });
+const request = await NewsApiRequest.findOne({ where: { id: 1 } });
+```
+
 ## Template (copy for each new model)
 
 ```ts
@@ -266,20 +338,20 @@ Article approval workflow tracking.
 
 Parallel article approval workflow tracking for AI-driven services. Mirrors ArticleApproved functionality but uses AI systems instead of human users for approval decisions.
 
-| Field                       | Type     | Constraints                 | Description                   |
-| --------------------------- | -------- | --------------------------- | ----------------------------- |
-| id                          | INTEGER  | PRIMARY KEY, AUTO_INCREMENT | Unique approval identifier    |
-| artificialIntelligenceId    | INTEGER  | FK, NOT NULL                | AI system that approved       |
-| articleId                   | INTEGER  | FK, NOT NULL                | Reference to article          |
-| isApproved                  | BOOLEAN  | DEFAULT true                | Approval status               |
-| headlineForPdfReport        | STRING   | NULLABLE                    | PDF report headline           |
-| publicationNameForPdfReport | STRING   | NULLABLE                    | PDF report publication name   |
-| publicationDateForPdfReport | DATEONLY | NULLABLE                    | PDF report publication date   |
-| textForPdfReport            | STRING   | NULLABLE                    | PDF report text content       |
-| urlForPdfReport             | STRING   | NULLABLE                    | PDF report URL                |
-| kmNotes                     | STRING   | NULLABLE                    | Knowledge manager notes       |
-| createdAt                   | DATE     | NOT NULL                    | Timestamp                     |
-| updatedAt                   | DATE     | NOT NULL                    | Timestamp                     |
+| Field                       | Type     | Constraints                 | Description                 |
+| --------------------------- | -------- | --------------------------- | --------------------------- |
+| id                          | INTEGER  | PRIMARY KEY, AUTO_INCREMENT | Unique approval identifier  |
+| artificialIntelligenceId    | INTEGER  | FK, NOT NULL                | AI system that approved     |
+| articleId                   | INTEGER  | FK, NOT NULL                | Reference to article        |
+| isApproved                  | BOOLEAN  | DEFAULT true                | Approval status             |
+| headlineForPdfReport        | STRING   | NULLABLE                    | PDF report headline         |
+| publicationNameForPdfReport | STRING   | NULLABLE                    | PDF report publication name |
+| publicationDateForPdfReport | DATEONLY | NULLABLE                    | PDF report publication date |
+| textForPdfReport            | STRING   | NULLABLE                    | PDF report text content     |
+| urlForPdfReport             | STRING   | NULLABLE                    | PDF report URL              |
+| kmNotes                     | STRING   | NULLABLE                    | Knowledge manager notes     |
+| createdAt                   | DATE     | NOT NULL                    | Timestamp                   |
+| updatedAt                   | DATE     | NOT NULL                    | Timestamp                   |
 
 ### ArticleDuplicateAnalyses
 
