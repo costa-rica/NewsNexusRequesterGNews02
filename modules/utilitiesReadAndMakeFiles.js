@@ -1,23 +1,43 @@
-const xlsx = require("xlsx");
+const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
 
-function getRequestsParameterArrayFromExcelFile() {
+async function getRequestsParameterArrayFromExcelFile() {
   // Read the workbook
-  let workbook;
+  const workbook = new ExcelJS.Workbook();
   try {
-    workbook = xlsx.readFile(
+    await workbook.xlsx.readFile(
       process.env.PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED
     );
   } catch (error) {
     console.error(error);
     return [];
   }
-  const firstSheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[firstSheetName];
+
+  const worksheet = workbook.worksheets[0];
 
   // Convert the worksheet to JSON
-  const jsonData = xlsx.utils.sheet_to_json(worksheet);
+  const jsonData = [];
+  const headers = {};
+
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) {
+      // First row contains headers
+      row.eachCell((cell, colNumber) => {
+        headers[colNumber] = cell.value;
+      });
+    } else {
+      // Data rows
+      const rowData = {};
+      row.eachCell((cell, colNumber) => {
+        const header = headers[colNumber];
+        if (header) {
+          rowData[header] = cell.value;
+        }
+      });
+      jsonData.push(rowData);
+    }
+  });
 
   // Map to array of clean query objects
   const queryObjects = jsonData.map((row) => {
