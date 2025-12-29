@@ -41,11 +41,18 @@ async function getRequestsParameterArrayFromExcelFile() {
 
   // Map to array of clean query objects
   const queryObjects = jsonData.map((row) => {
-    const parsedDate = row.startDate
-      ? new Date((row.startDate - 25569) * 86400 * 1000)
+    let parsedDate = "";
+    if (row.startDate) {
+      if (row.startDate instanceof Date) {
+        // ExcelJS returns Date objects for date cells
+        parsedDate = row.startDate.toISOString().split("T")[0];
+      } else if (typeof row.startDate === "number") {
+        // Fallback: Handle Excel serial numbers (from xlsx or other sources)
+        parsedDate = new Date((row.startDate - 25569) * 86400 * 1000)
           .toISOString()
-          .split("T")[0]
-      : "";
+          .split("T")[0];
+      }
+    }
 
     return {
       id: row.id,
