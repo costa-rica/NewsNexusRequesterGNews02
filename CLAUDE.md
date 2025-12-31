@@ -92,20 +92,30 @@ The database uses SQLite with Sequelize ORM. See `docs/DATABASE_OVERVIEW.md` for
 
 ## Logging System
 
-This application uses **Winston** for production-grade logging with monkey-patching (Phase 1 implementation per `docs/LOGGING_NODE_JS_V02.md`).
+This application uses **Winston** for production-grade logging with monkey-patching (Phase 1 implementation per `docs/LOGGING_NODE_JS_V03.md`).
 
 ### Configuration
 
 **Development Mode** (`NODE_ENV=development`):
 - Console output with colorized formatting
-- Verbose logging enabled (debug level)
+- All log levels enabled (debug and above)
 - No log files created
 - Format: `HH:mm:ss LEVEL [AppName] message`
+
+**Testing Mode** (`NODE_ENV=testing`):
+- File-based logging with rotation
+- Log directory: `PATH_TO_LOGS`
+- File name: `NewsNexusRequesterGNews02.log`
+- Info level and above (error, warn, info, http)
+- Rotation: 10MB per file (configurable via `LOG_MAX_SIZE`)
+- Retention: Last 10 files (configurable via `LOG_MAX_FILES`)
+- Format: `[YYYY-MM-DD HH:mm:ss.SSS] [LEVEL] [AppName] message {metadata}`
 
 **Production Mode** (`NODE_ENV=production`):
 - File-based logging with rotation
 - Log directory: `PATH_TO_LOGS`
 - File name: `NewsNexusRequesterGNews02.log`
+- **ERROR level only** (minimizes log volume in production)
 - Rotation: 10MB per file (configurable via `LOG_MAX_SIZE`)
 - Retention: Last 10 files (configurable via `LOG_MAX_FILES`)
 - Format: `[YYYY-MM-DD HH:mm:ss.SSS] [LEVEL] [AppName] message {metadata}`
@@ -115,16 +125,23 @@ This application uses **Winston** for production-grade logging with monkey-patch
 - **Location**: `config/logger.js`
 - **Initialization**: Required at top of `server.js` (after dotenv)
 - **Monkey-patching**: All `console.*` methods redirected to Winston
+- **Child process spawning**: `runSemanticScorer()` uses `spawn()` to pass environment variables to child
 - **Child process validation**: `runSemanticScorer()` validates `NAME_CHILD_PROCESS_SCORER` before spawning
 - **Error handling**: Falls back to console logging if file system errors occur
 
 ### Log Levels
 
 Winston levels used (in order of severity):
-1. `error` - Error conditions requiring attention
-2. `warn` - Warning conditions that should be reviewed
-3. `info` - Informational messages about application state (default in production)
-4. `debug` - Debug-level messages for troubleshooting (default in development)
+1. `error` - Error conditions requiring attention (logged in all environments)
+2. `warn` - Warning conditions that should be reviewed (logged in development and testing)
+3. `info` - Informational messages about application state (logged in development and testing)
+4. `http` - HTTP request/response logging (logged in development and testing)
+5. `debug` - Debug-level messages for troubleshooting (logged in development only)
+
+**Environment-Specific Levels:**
+- Development: `debug` (captures all levels)
+- Testing: `info` (captures error, warn, info, http)
+- Production: `error` (captures only errors)
 
 ## Important Behaviors
 
@@ -169,12 +186,13 @@ Required environment variables (see README.md for examples):
 - `MAX_LENGTH_OF_QUERY_PARAMS`: Query character limit (e.g., 250)
 
 **Logging Configuration:**
-- `NODE_ENV`: `"development"` or `"production"` (required)
-- `PATH_TO_LOGS`: Directory for log files (required in production)
+- `NODE_ENV`: `"development"`, `"testing"`, or `"production"` (required)
+- `PATH_TO_LOGS`: Directory for log files (required in production and testing)
 - `LOG_MAX_SIZE`: Max log file size in bytes (optional, default: 10485760 = 10MB)
 - `LOG_MAX_FILES`: Max number of log files to retain (optional, default: 10)
 - `NAME_CHILD_PROCESS_SCORER`: Child process name for semantic scorer (required, e.g., "NewsNexusSemanticScorer02")
   - **Important**: Application will exit with fatal error if this variable is missing when spawning child process
+  - Child process inherits all environment variables from parent (including `PATH_TO_LOGS`, `LOG_MAX_SIZE`, `LOG_MAX_FILES`, `NODE_ENV`)
 
 ## Excel Spreadsheet Format
 

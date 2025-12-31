@@ -1,4 +1,8 @@
 require("dotenv").config();
+
+// Initialize Winston logger (monkey-patches console methods)
+const logger = require("./config/logger");
+
 console.log("Starting NewsNexusRequesterGNews02");
 
 // Initialize database models BEFORE importing other modules

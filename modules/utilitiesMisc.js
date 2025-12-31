@@ -2,7 +2,7 @@ const {
   NewsApiRequest,
   NewsArticleAggregatorSource,
 } = require("newsnexus10db");
-const { exec } = require("child_process");
+const { spawn } = require("child_process");
 
 async function createArraysOfParametersNeverRequestedAndRequested(
   queryObjects
@@ -142,31 +142,54 @@ async function runSemanticScorer() {
   console.log(
     `Starting child process: ${process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER}`
   );
+
   return new Promise((resolve, reject) => {
-    exec(
-      `node "${process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER}"`,
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error executing child process: ${error.message}`);
-          return reject(error);
-        }
-        if (stderr) {
-          console.error(`Child process stderr: ${stderr}`);
-        }
-        console.log(`Child process finished`);
+    // Spawn child process with inherited environment variables
+    // This passes PATH_TO_LOGS, LOG_MAX_SIZE, LOG_MAX_FILES, NODE_ENV, and NAME_CHILD_PROCESS_SCORER
+    const child = spawn("node", [process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER], {
+      env: {
+        ...process.env, // Inherit all environment variables from parent
+      },
+      stdio: ['inherit', 'pipe', 'pipe'] // Inherit stdin, pipe stdout/stderr
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+      console.log(data.toString().trim());
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+      console.error(data.toString().trim());
+    });
+
+    child.on('error', (error) => {
+      console.error(`Error spawning child process: ${error.message}`);
+      reject(error);
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        console.log(`Child process finished with exit code ${code}`);
         resolve(stdout);
+      } else {
+        console.error(`Child process exited with code ${code}`);
+        reject(new Error(`Child process exited with code ${code}`));
       }
-    );
+    });
   })
     .then(() => {
       console.log(
-        " [NewsNexusRequesterNewsDataIo01] ✅ NewsNexusSemanticScorer02 has finished."
+        " [NewsNexusRequesterGNews02] ✅ NewsNexusSemanticScorer02 has finished."
       );
       process.exit();
     })
     .catch(() => {
       console.log(
-        " [NewsNexusRequesterNewsDataIo01] ❌ NewsNexusSemanticScorer02 has finished with error."
+        " [NewsNexusRequesterGNews02] ❌ NewsNexusSemanticScorer02 has finished with error."
       );
       process.exit(1);
     });
