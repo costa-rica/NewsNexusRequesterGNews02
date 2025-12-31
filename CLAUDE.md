@@ -18,7 +18,7 @@ node index.js
 node server.js
 ```
 
-The `server.js` entry point only runs between 20:55-21:05 UTC and adds an app name prefix to console logs.
+The `server.js` entry point only runs between 20:55-21:05 UTC and initializes Winston logging.
 
 ## Core Architecture
 
@@ -48,6 +48,14 @@ The `server.js` entry point only runs between 20:55-21:05 UTC and adds an app na
 
 ### Key Modules
 
+**config/logger.js**
+- Winston logger configuration and initialization
+- Monkey-patches `console.log/error/warn/info/debug` to use Winston
+- Development mode: Colorized console output
+- Production mode: Rotating file logs with timestamps
+- Handles log directory creation and error fallback
+- Format: `[timestamp] [LEVEL] [NewsNexusRequesterGNews02] message {metadata}`
+
 **modules/requestsGNews.js**
 - `requester()`: Main orchestration function for a single request
 - `makeGNewsApiRequestDetailed()`: Builds query URL with length constraints, makes fetch call
@@ -61,9 +69,13 @@ The `server.js` entry point only runs between 20:55-21:05 UTC and adds an app na
 - `checkRequestAndModifyDates()`: Adjusts date ranges to avoid re-querying already-covered dates
 - `findEndDateToQueryParameters()`: Looks up latest `dateEndOfRequest` from database for given parameters
 - `runSemanticScorer()`: Spawns semantic scorer child process and exits
+  - **Validation**: Checks for `NAME_CHILD_PROCESS_SCORER` environment variable before spawning
+  - Fatal error with clear message if variable is missing
 
 **modules/utilitiesReadAndMakeFiles.js**
 - `getRequestsParameterArrayFromExcelFile()`: Reads Excel with columns: id, andString, orString, notString, startDate
+  - Uses ExcelJS (migrated from xlsx package for security)
+  - Handles both Date objects and Excel serial numbers for dates
 - `writeResponseDataFromNewsAggregator()`: Writes API response JSON to dated directory under `PATH_TO_API_RESPONSE_JSON_FILES`
 
 ## Database Integration
@@ -77,6 +89,42 @@ This app depends on the `newsnexus10db` package (local file dependency: `../News
 - `NewsArticleAggregatorSource`: Stores API credentials and URLs (nameOfOrg, apiKey, url)
 
 The database uses SQLite with Sequelize ORM. See `docs/DATABASE_OVERVIEW.md` for comprehensive schema details.
+
+## Logging System
+
+This application uses **Winston** for production-grade logging with monkey-patching (Phase 1 implementation per `docs/LOGGING_NODE_JS_V02.md`).
+
+### Configuration
+
+**Development Mode** (`NODE_ENV=development`):
+- Console output with colorized formatting
+- Verbose logging enabled (debug level)
+- No log files created
+- Format: `HH:mm:ss LEVEL [AppName] message`
+
+**Production Mode** (`NODE_ENV=production`):
+- File-based logging with rotation
+- Log directory: `PATH_TO_LOGS`
+- File name: `NewsNexusRequesterGNews02.log`
+- Rotation: 10MB per file (configurable via `LOG_MAX_SIZE`)
+- Retention: Last 10 files (configurable via `LOG_MAX_FILES`)
+- Format: `[YYYY-MM-DD HH:mm:ss.SSS] [LEVEL] [AppName] message {metadata}`
+
+### Implementation Details
+
+- **Location**: `config/logger.js`
+- **Initialization**: Required at top of `server.js` (after dotenv)
+- **Monkey-patching**: All `console.*` methods redirected to Winston
+- **Child process validation**: `runSemanticScorer()` validates `NAME_CHILD_PROCESS_SCORER` before spawning
+- **Error handling**: Falls back to console logging if file system errors occur
+
+### Log Levels
+
+Winston levels used (in order of severity):
+1. `error` - Error conditions requiring attention
+2. `warn` - Warning conditions that should be reviewed
+3. `info` - Informational messages about application state (default in production)
+4. `debug` - Debug-level messages for troubleshooting (default in development)
 
 ## Important Behaviors
 
@@ -103,18 +151,30 @@ The database uses SQLite with Sequelize ORM. See `docs/DATABASE_OVERVIEW.md` for
 ## Environment Variables Reference
 
 Required environment variables (see README.md for examples):
-- `NAME_APP`: Application name
+
+**Application Configuration:**
+- `NAME_APP`: Application name (e.g., "NewsNexusRequesterGNews02")
 - `NAME_DB`, `PATH_DATABASE`: Database location (inherited from `newsnexus10db`)
 - `PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED`: Excel file path
 - `PATH_TO_API_RESPONSE_JSON_FILES`: Directory for storing API response JSON files
 - `PATH_AND_FILENAME_TO_SEMANTIC_SCORER`: Path to semantic scorer index.js
 - `PATH_TO_SEMANTIC_SCORER_DIR`: Directory for semantic scorer output
 - `PATH_TO_SEMANTIC_SCORER_KEYWORDS_EXCEL_FILE`: Keywords Excel for semantic scorer
+
+**Request Configuration:**
 - `ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES`: `true` or `false`
 - `NAME_OF_ORG_REQUESTING_FROM`: `"GNews"`
 - `LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP`: Max iterations (e.g., 200)
 - `MILISECONDS_IN_BETWEEN_REQUESTS`: Rate limit delay (e.g., 1100)
 - `MAX_LENGTH_OF_QUERY_PARAMS`: Query character limit (e.g., 250)
+
+**Logging Configuration:**
+- `NODE_ENV`: `"development"` or `"production"` (required)
+- `PATH_TO_LOGS`: Directory for log files (required in production)
+- `LOG_MAX_SIZE`: Max log file size in bytes (optional, default: 10485760 = 10MB)
+- `LOG_MAX_FILES`: Max number of log files to retain (optional, default: 10)
+- `NAME_CHILD_PROCESS_SCORER`: Child process name for semantic scorer (required, e.g., "NewsNexusSemanticScorer02")
+  - **Important**: Application will exit with fatal error if this variable is missing when spawning child process
 
 ## Excel Spreadsheet Format
 

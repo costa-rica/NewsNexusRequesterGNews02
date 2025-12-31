@@ -129,6 +129,16 @@ async function findEndDateToQueryParameters(queryParameters) {
 }
 
 async function runSemanticScorer() {
+  // Validate NAME_CHILD_PROCESS_SCORER is set (FATAL ERROR if missing)
+  if (!process.env.NAME_CHILD_PROCESS_SCORER) {
+    console.error(
+      "FATAL ERROR: Cannot spawn semantic scorer child process - missing NAME_CHILD_PROCESS_SCORER environment variable.\n" +
+        "Please add NAME_CHILD_PROCESS_SCORER to the .env file.\n" +
+        "Example: NAME_CHILD_PROCESS_SCORER=NewsNexusSemanticScorer02"
+    );
+    process.exit(1);
+  }
+
   console.log(
     `Starting child process: ${process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER}`
   );

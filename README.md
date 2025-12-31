@@ -36,6 +36,33 @@ This methodical approach ensures comprehensive and prioritized coverage of query
 
 This app requires importing or adding the `newsnexus10db` package, which provides the Sequelize setup and model definitions needed to read and write to the `NewsApiRequests` table.
 
+## Logging
+
+This application uses **Winston** for production-grade logging with the following features:
+
+- **Development Mode** (`NODE_ENV=development`): Colorized console output for easy debugging
+- **Production Mode** (`NODE_ENV=production`): Rotating log files with timestamps and structured formatting
+- **Monkey-patching**: Existing `console.log/error/warn/info/debug` calls automatically use Winston (zero code changes required)
+- **Child Process Support**: Validates `NAME_CHILD_PROCESS_SCORER` before spawning semantic scorer
+
+### Log Output
+
+**Development:**
+```
+14:32:15 INFO [NewsNexusRequesterGNews02] Starting main function
+14:32:16 ERROR [NewsNexusRequesterGNews02] Database connection failed
+```
+
+**Production:**
+```
+[2025-12-28 14:32:15.234] [INFO] [NewsNexusRequesterGNews02] Starting main function
+[2025-12-28 14:32:16.891] [ERROR] [NewsNexusRequesterGNews02] Database connection failed
+```
+
+Log files are stored in `PATH_TO_LOGS` directory with automatic rotation (10MB per file, keeps last 10 files by default).
+
+For detailed logging requirements and implementation, see `docs/LOGGING_NODE_JS_V02.md`.
+
 ## Environment Variables
 
 - `PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED`: Path to the Excel file containing the query parameters.
@@ -62,6 +89,13 @@ NAME_OF_ORG_REQUESTING_FROM=GNews
 LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP=200
 MILISECONDS_IN_BETWEEN_REQUESTS=1100
 MAX_LENGTH_OF_QUERY_PARAMS=250
+
+# Logging Configuration
+NODE_ENV=development
+PATH_TO_LOGS=/Users/nick/Documents/_project_resources/NewsNexus10/logs
+LOG_MAX_SIZE=10485760
+LOG_MAX_FILES=10
+NAME_CHILD_PROCESS_SCORER=NewsNexusSemanticScorer02
 ```
 
 #### ubuntu server
@@ -83,6 +117,13 @@ NAME_OF_ORG_REQUESTING_FROM=GNews
 LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP=200
 MILISECONDS_IN_BETWEEN_REQUESTS=1100
 MAX_LENGTH_OF_QUERY_PARAMS=250
+
+# Logging Configuration
+NODE_ENV=production
+PATH_TO_LOGS=/home/nick/project_resources/NewsNexus10/logs
+LOG_MAX_SIZE=10485760
+LOG_MAX_FILES=10
+NAME_CHILD_PROCESS_SCORER=NewsNexusSemanticScorer02
 ```
 
 ## Excel spreadsheet

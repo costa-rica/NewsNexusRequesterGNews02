@@ -1,17 +1,7 @@
 require("dotenv").config();
-const originalLog = console.log;
-const originalError = console.error;
-const prefix = `[${process.env.NAME_APP}] `;
 
-console.log = (...args) => {
-  originalLog(prefix, ...args);
-};
-
-console.error = (...args) => {
-  originalError(prefix, ...args);
-};
-
-// require("./index");
+// Initialize Winston logger (monkey-patches console methods)
+const logger = require("./config/logger");
 
 // Time check: Only run between 20:50 and 21:10 UTC (time of the Ubuntu server)
 const targetTimeToStartAutomation = 21;
