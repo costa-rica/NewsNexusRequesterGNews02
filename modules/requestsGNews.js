@@ -11,6 +11,7 @@ const {
   checkRequestAndModifyDates,
   runSemanticScorer,
 } = require("./utilitiesMisc");
+const logger = require("./logger");
 
 async function requester(requestParametersObject, indexMaster) {
   // Step 1: prepare paramters
