@@ -9,14 +9,14 @@ This guide documents the migration from the vulnerable `xlsx` package to the sec
 
 ## Package Comparison
 
-| Feature | xlsx | exceljs |
-|---------|------|---------|
-| Version used | 0.18.5 | 4.4.0 |
-| Security vulnerabilities | Yes (Prototype Pollution, ReDoS) | No vulnerabilities found |
-| Date cell return type | Excel serial number (number) | JavaScript Date object |
-| API style | Synchronous | Asynchronous (Promises) |
-| Maintenance status | Inactive (no npm releases in 12+ months) | Active |
-| Weekly downloads | ~2M | ~3.3M |
+| Feature                  | xlsx                                     | exceljs                  |
+| ------------------------ | ---------------------------------------- | ------------------------ |
+| Version used             | 0.18.5                                   | 4.4.0                    |
+| Security vulnerabilities | Yes (Prototype Pollution, ReDoS)         | No vulnerabilities found |
+| Date cell return type    | Excel serial number (number)             | JavaScript Date object   |
+| API style                | Synchronous                              | Asynchronous (Promises)  |
+| Maintenance status       | Inactive (no npm releases in 12+ months) | Active                   |
+| Weekly downloads         | ~2M                                      | ~3.3M                    |
 
 ## Critical Issue: Date Parsing
 
@@ -60,6 +60,7 @@ When you try to apply the serial number formula to a Date object, JavaScript coe
 ### 1. Update package.json
 
 **Remove:**
+
 ```json
 "dependencies": {
   "xlsx": "^0.18.5"
@@ -67,6 +68,7 @@ When you try to apply the serial number formula to a Date object, JavaScript coe
 ```
 
 **Add:**
+
 ```json
 "dependencies": {
   "exceljs": "^4.4.0"
@@ -74,12 +76,14 @@ When you try to apply the serial number formula to a Date object, JavaScript coe
 ```
 
 **Install:**
+
 ```bash
 npm uninstall xlsx
 npm install exceljs
 ```
 
 **Verify:**
+
 ```bash
 npm audit  # Should show 0 vulnerabilities
 ```
@@ -87,11 +91,13 @@ npm audit  # Should show 0 vulnerabilities
 ### 2. Update Import Statements
 
 **Before (xlsx):**
+
 ```javascript
 const xlsx = require("xlsx");
 ```
 
 **After (exceljs):**
+
 ```javascript
 const ExcelJS = require("exceljs");
 ```
@@ -99,6 +105,7 @@ const ExcelJS = require("exceljs");
 ### 3. Update File Reading Code
 
 **Before (xlsx - synchronous):**
+
 ```javascript
 function readExcelFile() {
   const workbook = xlsx.readFile("path/to/file.xlsx");
@@ -111,6 +118,7 @@ function readExcelFile() {
 ```
 
 **After (exceljs - asynchronous):**
+
 ```javascript
 async function readExcelFile() {
   const workbook = new ExcelJS.Workbook();
@@ -147,6 +155,7 @@ async function readExcelFile() {
 ### 4. Fix Date Parsing (CRITICAL)
 
 **Before (xlsx - BROKEN with exceljs):**
+
 ```javascript
 const queryObjects = jsonData.map((row) => {
   const parsedDate = row.startDate
@@ -163,6 +172,7 @@ const queryObjects = jsonData.map((row) => {
 ```
 
 **After (exceljs - FIXED):**
+
 ```javascript
 const queryObjects = jsonData.map((row) => {
   let parsedDate = "";
@@ -188,6 +198,7 @@ const queryObjects = jsonData.map((row) => {
 ### 5. Update Function Calls to Handle Async
 
 **Before:**
+
 ```javascript
 function main() {
   const data = readExcelFile();
@@ -196,6 +207,7 @@ function main() {
 ```
 
 **After:**
+
 ```javascript
 async function main() {
   const data = await readExcelFile();
@@ -208,6 +220,7 @@ async function main() {
 ### Excel Serial Number Format
 
 Excel stores dates as serial numbers:
+
 - Number represents days since January 1, 1900 (or 1904 on Mac)
 - Example: `44927` = December 28, 2024
 - Fractional part represents time (e.g., `44927.5` = noon on that day)
@@ -258,7 +271,7 @@ function parseExcelDate(value) {
       }
     }
   } catch (error) {
-    console.error("Error parsing date:", error);
+    logger.error("Error parsing date:", error);
   }
 
   return "";
@@ -275,15 +288,15 @@ const parsedDate = parseExcelDate(row.startDate);
 ```javascript
 // Test with Date object (exceljs behavior)
 const dateObj = new Date("2024-12-28");
-console.log(parseExcelDate(dateObj)); // Should output: 2024-12-28
+logger.info(parseExcelDate(dateObj)); // Should output: 2024-12-28
 
 // Test with serial number (xlsx behavior)
 const serialNum = 45647; // Some date
-console.log(parseExcelDate(serialNum)); // Should output valid date
+logger.info(parseExcelDate(serialNum)); // Should output valid date
 
 // Test with invalid input
-console.log(parseExcelDate(null)); // Should output: ""
-console.log(parseExcelDate(undefined)); // Should output: ""
+logger.info(parseExcelDate(null)); // Should output: ""
+logger.info(parseExcelDate(undefined)); // Should output: ""
 ```
 
 ### 2. Integration Test
@@ -292,12 +305,12 @@ console.log(parseExcelDate(undefined)); // Should output: ""
 // Run your actual Excel file reading
 async function testExcelReading() {
   const data = await readExcelFile();
-  console.log("First row:", data[0]);
+  logger.info("First row:", data[0]);
 
   // Check that dates are properly formatted
   data.forEach((row, index) => {
     if (row.dateField && !/^\d{4}-\d{2}-\d{2}$/.test(row.dateField)) {
-      console.error(`Invalid date format at row ${index}:`, row.dateField);
+      logger.error(`Invalid date format at row ${index}:`, row.dateField);
     }
   });
 }
@@ -306,6 +319,7 @@ async function testExcelReading() {
 ### 3. Error Monitoring
 
 Watch for these errors indicating migration issues:
+
 - `RangeError: Invalid time value`
 - `TypeError: Cannot read property 'toISOString' of undefined`
 - Date fields showing as `NaN` or empty strings
@@ -324,6 +338,7 @@ If you have other projects using the `xlsx` package with date cells, they will n
 ## Common Pitfalls
 
 ### Pitfall 1: Forgetting await
+
 ```javascript
 // ❌ Wrong - missing await
 const data = readExcelFile();
@@ -333,6 +348,7 @@ const data = await readExcelFile();
 ```
 
 ### Pitfall 2: Not handling empty cells
+
 ```javascript
 // ❌ Wrong - will fail on empty cells
 row.eachCell((cell) => {
@@ -348,6 +364,7 @@ row.eachCell((cell, colNumber) => {
 ```
 
 ### Pitfall 3: Assuming all dates are serial numbers
+
 ```javascript
 // ❌ Wrong - assumes xlsx format
 const date = new Date((value - 25569) * 86400 * 1000);
@@ -385,10 +402,12 @@ Use this checklist for each project:
 ## Example: Complete Migration
 
 See the actual migration in this project:
+
 - **Commit 1**: `fix: replace vulnerable xlsx package with secure exceljs` (8b7c338)
 - **Commit 2**: `fix: handle ExcelJS Date objects in date parsing` (c0d4516)
 
 Files changed:
+
 - `package.json` - Updated dependencies
 - `modules/utilitiesReadAndMakeFiles.js` - Main migration code
 - `index.js` - Added await for async call

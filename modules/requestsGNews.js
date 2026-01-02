@@ -19,7 +19,7 @@ async function requester(requestParametersObject, indexMaster) {
   const orString = requestParametersObject.orString;
   const notString = requestParametersObject.notString;
   const dateStartOfRequest = requestParametersObject.dateStartOfRequest;
-  // console.log(
+  // logger.info(
   //   `dateStartOfRequest: ${dateStartOfRequest}, type: ${typeof dateStartOfRequest}`
   // );
 
@@ -53,7 +53,7 @@ async function requester(requestParametersObject, indexMaster) {
   let newsApiRequestObj = null;
 
   if (adjustedStartDate === adjustedEndDate) {
-    console.log(`No request needed for ${requestParametersObject.andString}`);
+    logger.info(`No request needed for ${requestParametersObject.andString}`);
     return adjustedEndDate;
   }
 
@@ -69,17 +69,17 @@ async function requester(requestParametersObject, indexMaster) {
         indexMaster
       ));
   } catch (error) {
-    console.error("Error during GNews API request:", error);
+    logger.error("Error during GNews API request:", error);
     return; // prevent proceeding to storeGNewsArticles if request failed
   }
 
   // Step 4: store the articles
   if (!requestResponseData?.articles) {
-    console.log("No articles received from GNews API");
+    logger.info("No articles received from GNews API");
   } else {
     // Store articles and update NewsApiRequest
     await storeGNewsArticles(requestResponseData, newsApiRequestObj);
-    console.log(`completed NewsApiRequest.id: ${newsApiRequestObj.id}`);
+    logger.info(`completed NewsApiRequest.id: ${newsApiRequestObj.id}`);
   }
 
   return adjustedEndDate;
@@ -104,11 +104,11 @@ async function makeGNewsApiRequestDetailed(
 
   // Step 1: prepare token and dates
   if (!endDate) {
-    console.log("[makeGNewsApiRequestDetailed] no endDate !");
+    logger.info("[makeGNewsApiRequestDetailed] no endDate !");
     endDate = new Date().toISOString().split("T")[0];
   }
   if (!startDate) {
-    console.log("[makeGNewsApiRequestDetailed] no startDate !");
+    logger.info("[makeGNewsApiRequestDetailed] no startDate !");
     // startDate should be 90 days prior to endDate - account limitation
     startDate = new Date(new Date().setDate(new Date().getDate() - 90))
       .toISOString()
@@ -152,12 +152,12 @@ async function makeGNewsApiRequestDetailed(
   let newsApiRequestObj = null;
   if (process.env.ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES === "true") {
     const response = await fetch(requestUrl);
-    // console.log(`response_statue: ${response.status}`);
+    // logger.info(`response_statue: ${response.status}`);
     requestResponseData = await response.json();
 
     if (!requestResponseData?.articles) {
       status = "error";
-      console.log(
+      logger.info(
         `🚧 Error: no articles received for dates of request: ${startDate} - ${endDate}`
       );
       writeResponseDataFromNewsAggregator(
@@ -175,7 +175,7 @@ async function makeGNewsApiRequestDetailed(
             e.toLowerCase().includes("request limit")
         )
       ) {
-        console.log(
+        logger.info(
           `--> ⛔ Ending process: rate limited by ${process.env.NAME_OF_ORG_REQUESTING_FROM}`
         );
         await runSemanticScorer();
@@ -199,11 +199,11 @@ async function makeGNewsApiRequestDetailed(
       isFromAutomation: true,
     });
   } else {
-    console.log(` 🚧 ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES is false`);
+    logger.info(` 🚧 ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES is false`);
     newsApiRequestObj = requestUrl;
   }
 
-  console.log(`requestUrl: ${requestUrl}`);
+  logger.info(`requestUrl: ${requestUrl}`);
 
   return { requestResponseData, newsApiRequestObj };
 }
@@ -251,7 +251,7 @@ async function storeGNewsArticles(requestResponseData, newsApiRequestObj) {
       false
     );
   } catch (error) {
-    console.error(error);
+    logger.error(error);
 
     writeResponseDataFromNewsAggregator(
       gNewsSource.id,

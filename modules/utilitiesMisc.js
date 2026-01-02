@@ -25,7 +25,7 @@ async function createArraysOfParametersNeverRequestedAndRequested(
   });
 
   for (const queryObj of queryObjects) {
-    // console.log(queryObj);
+    // logger.info(queryObj);
     const alreadyRequested = existingRequests.find((req) => {
       return (
         req.andString === queryObj.andString &&
@@ -131,7 +131,7 @@ async function findEndDateToQueryParameters(queryParameters) {
 async function runSemanticScorer() {
   // Validate NAME_CHILD_PROCESS_SCORER is set (FATAL ERROR if missing)
   if (!process.env.NAME_CHILD_PROCESS_SCORER) {
-    console.error(
+    logger.error(
       "FATAL ERROR: Cannot spawn semantic scorer child process - missing NAME_CHILD_PROCESS_SCORER environment variable.\n" +
         "Please add NAME_CHILD_PROCESS_SCORER to the .env file.\n" +
         "Example: NAME_CHILD_PROCESS_SCORER=NewsNexusSemanticScorer02"
@@ -139,56 +139,60 @@ async function runSemanticScorer() {
     process.exit(1);
   }
 
-  console.log(
+  logger.info(
     `Starting child process: ${process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER}`
   );
 
   return new Promise((resolve, reject) => {
     // Spawn child process with inherited environment variables
     // This passes PATH_TO_LOGS, LOG_MAX_SIZE, LOG_MAX_FILES, NODE_ENV, and NAME_CHILD_PROCESS_SCORER
-    const child = spawn("node", [process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER], {
-      env: {
-        ...process.env, // Inherit all environment variables from parent
-      },
-      stdio: ['inherit', 'pipe', 'pipe'] // Inherit stdin, pipe stdout/stderr
-    });
+    const child = spawn(
+      "node",
+      [process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER],
+      {
+        env: {
+          ...process.env, // Inherit all environment variables from parent
+        },
+        stdio: ["inherit", "pipe", "pipe"], // Inherit stdin, pipe stdout/stderr
+      }
+    );
 
-    let stdout = '';
-    let stderr = '';
+    let stdout = "";
+    let stderr = "";
 
-    child.stdout.on('data', (data) => {
+    child.stdout.on("data", (data) => {
       stdout += data.toString();
-      console.log(data.toString().trim());
+      logger.info(data.toString().trim());
     });
 
-    child.stderr.on('data', (data) => {
+    child.stderr.on("data", (data) => {
       stderr += data.toString();
-      console.error(data.toString().trim());
+      logger.error(data.toString().trim());
     });
 
-    child.on('error', (error) => {
-      console.error(`Error spawning child process: ${error.message}`);
+    child.on("error", (error) => {
+      logger.error(`Error spawning child process: ${error.message}`);
       reject(error);
     });
 
-    child.on('close', (code) => {
+    child.on("close", (code) => {
       if (code === 0) {
-        console.log(`Child process finished with exit code ${code}`);
+        logger.info(`Child process finished with exit code ${code}`);
         resolve(stdout);
       } else {
-        console.error(`Child process exited with code ${code}`);
+        logger.error(`Child process exited with code ${code}`);
         reject(new Error(`Child process exited with code ${code}`));
       }
     });
   })
     .then(() => {
-      console.log(
+      logger.info(
         " [NewsNexusRequesterGNews02] ✅ NewsNexusSemanticScorer02 has finished."
       );
       process.exit();
     })
     .catch(() => {
-      console.log(
+      logger.info(
         " [NewsNexusRequesterGNews02] ❌ NewsNexusSemanticScorer02 has finished with error."
       );
       process.exit(1);

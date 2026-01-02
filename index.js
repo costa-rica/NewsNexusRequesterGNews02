@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-// Initialize Winston logger (monkey-patches console methods)
+// Initialize Winston logger
 const logger = require("./config/logger");
 
 // Time check: Only run between 20:55 and 21:05 UTC
@@ -11,19 +11,19 @@ const startMinutes = (targetTimeToStartAutomation - 1) * 60 + 55; // 20:55 UTC
 const endMinutes = targetTimeToStartAutomation * 60 + 5; // 21:05 UTC
 
 if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
-  console.log(
+  logger.info(
     `Not within allowed time window (20:55–21:05 UTC), exiting. Current UTC time: ${now.toISOString()}`
   );
   process.exit(0);
 }
 
-console.log(`Running ${process.env.NAME_APP} between 20:55 and 21:05 UTC`);
-console.log("Starting NewsNexusRequesterGNews02");
+logger.info(`Running ${process.env.NAME_APP} between 20:55 and 21:05 UTC`);
+logger.info("Starting NewsNexusRequesterGNews02");
 
 // Initialize database models BEFORE importing other modules
 const { initModels, sequelize } = require("newsnexus10db");
 initModels();
-console.log(
+logger.info(
   `database location: ${process.env.PATH_DATABASE}${process.env.NAME_DB}`
 );
 
@@ -37,19 +37,19 @@ const {
 } = require("./modules/utilitiesMisc");
 const { requester } = require("./modules/requestsGNews");
 
-console.log(
+logger.info(
   `--------------------------------------------------------------------------------`
 );
-console.log(`- Start ${process.env.NAME_APP} ${new Date().toISOString()} --`);
-console.log(
+logger.info(`- Start ${process.env.NAME_APP} ${new Date().toISOString()} --`);
+logger.info(
   `MILISECONDS_IN_BETWEEN_REQUESTS: ${process.env.MILISECONDS_IN_BETWEEN_REQUESTS}`
 );
-console.log(
+logger.info(
   `--------------------------------------------------------------------------------`
 );
 
 async function main() {
-  console.log("Starting main function");
+  logger.info("Starting main function");
   // Step 1: Create Array of Parameters for Requests - prioritized based on dateEndOfRequest
   // Step 1.1: Get the query objects from Excel file
   const queryObjects = await getRequestsParameterArrayFromExcelFile();
@@ -75,14 +75,14 @@ async function main() {
     arrayOfPrioritizedParameters[i].dateEndOfRequest =
       await findEndDateToQueryParameters(arrayOfPrioritizedParameters[i]);
     if (i % 1000 === 0) {
-      console.log(
+      logger.info(
         `-- ${i} of ${arrayOfPrioritizedParameters.length} rows processed --`
       );
     }
   }
 
   if (arrayOfPrioritizedParameters.length === 0) {
-    console.log(
+    logger.info(
       "--- No (unrequested)request parameters found in Excel file. Exiting process. ---"
     );
     return;
@@ -96,7 +96,7 @@ async function main() {
     const currentParams = arrayOfPrioritizedParameters[index];
     let dateEndOfRequest;
 
-    console.log(
+    logger.info(
       `-- ${index}: Start processing request for AND ${currentParams.andString} OR ${currentParams.orString} NOT ${currentParams.notString}`
     );
     // Step 2.1: Verify that dateEndOfRequest is today or prior
@@ -109,13 +109,13 @@ async function main() {
     }
     // Step 2.2: Respect pacing
     await sleep(process.env.MILISECONDS_IN_BETWEEN_REQUESTS);
-    console.log(`End of ${index} request loop --`);
+    logger.info(`End of ${index} request loop --`);
     index++;
     indexMaster++;
     if (
       indexMaster > Number(process.env.LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP)
     ) {
-      console.log(
+      logger.info(
         `--- End due to indexMaster > ${process.env.LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP} ---`
       );
       await runSemanticScorer();
@@ -128,14 +128,14 @@ async function main() {
       index === arrayOfPrioritizedParameters.length &&
       dateEndOfRequest === new Date().toISOString().split("T")[0]
     ) {
-      console.log(`--- [End process] All GNews queries updated ---`);
+      logger.info(`--- [End process] All GNews queries updated ---`);
       await runSemanticScorer();
       break;
     }
 
     // Step 2.3.2: [Restart looping]Check if all requests have been processed and dateEndOfRequest is not today
     if (index === arrayOfPrioritizedParameters.length) {
-      console.log(
+      logger.info(
         `--- [Restart looping] Went through all ${arrayOfPrioritizedParameters.length} queries and dateEndOfRequest is not today ---`
       );
       index = 0;

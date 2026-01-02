@@ -10,7 +10,7 @@ async function getRequestsParameterArrayFromExcelFile() {
       process.env.PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED
     );
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     return [];
   }
 

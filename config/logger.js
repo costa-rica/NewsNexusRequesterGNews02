@@ -56,7 +56,7 @@ if (isProduction || isTesting) {
     // Ensure log directory exists
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
-      console.log(`Created log directory: ${logDir}`);
+      logger.info(`Created log directory: ${logDir}`);
     }
 
     logger.add(
@@ -68,8 +68,8 @@ if (isProduction || isTesting) {
       })
     );
   } catch (error) {
-    console.error(`Failed to initialize file logging: ${error.message}`);
-    console.error("Falling back to console logging");
+    logger.error(`Failed to initialize file logging: ${error.message}`);
+    logger.error("Falling back to console logging");
     logger.add(
       new winston.transports.Console({
         format: developmentFormat,
@@ -85,27 +85,27 @@ if (isProduction || isTesting) {
   );
 }
 
-// Monkey-patch console methods to use Winston
-const originalLog = console.log;
-const originalError = console.error;
-const originalWarn = console.warn;
-const originalInfo = console.info;
-const originalDebug = console.debug;
+// // Monkey-patch console methods to use Winston
+// const originalLog = logger.info;
+// const originalError = logger.error;
+// const originalWarn = console.warn;
+// const originalInfo = console.info;
+// const originalDebug = console.debug;
 
-console.log = (...args) => logger.info(args.join(" "));
-console.error = (...args) => logger.error(args.join(" "));
-console.warn = (...args) => logger.warn(args.join(" "));
-console.info = (...args) => logger.info(args.join(" "));
-console.debug = (...args) => logger.debug(args.join(" "));
+// logger.info = (...args) => logger.info(args.join(" "));
+// logger.error = (...args) => logger.error(args.join(" "));
+// console.warn = (...args) => logger.warn(args.join(" "));
+// console.info = (...args) => logger.info(args.join(" "));
+// console.debug = (...args) => logger.debug(args.join(" "));
 
-// Store original methods for emergency use
-console._original = {
-  log: originalLog,
-  error: originalError,
-  warn: originalWarn,
-  info: originalInfo,
-  debug: originalDebug,
-};
+// // Store original methods for emergency use
+// console._original = {
+//   log: originalLog,
+//   error: originalError,
+//   warn: originalWarn,
+//   info: originalInfo,
+//   debug: originalDebug,
+// };
 
 // Log initialization
 logger.info(
