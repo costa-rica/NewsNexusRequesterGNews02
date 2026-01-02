@@ -32,7 +32,7 @@ Before implementing Winston logging, manually search and replace all console sta
 - **Use Case**: Local development
 
 ### Testing Mode
-- **Output**: Console AND log files
+- **Output**: Console AND log files (both simultaneously)
 - **Log Files**: Rotating files with retention
 - **Use Case**: Automated testing, staging environments
 
@@ -68,11 +68,25 @@ Before implementing Winston logging, manually search and replace all console sta
 
 **LOG_MAX_SIZE**
 - Default: `5` (megabytes)
+- Specify value in megabytes (e.g., `5` = 5MB)
+- Logger implementation converts to bytes internally for Winston
 - Maximum size of each log file before rotation
 
 **LOG_MAX_FILES**
 - Default: `5`
 - Number of rotated log files to retain
+
+## Logger File Placement
+
+The logger configuration file should be placed based on existing project structure:
+
+1. Check for existing config directories in this order:
+   - `config/`
+   - `src/config/`
+   - `lib/config/`
+   - `src/lib/config/`
+2. If any of these directories exist, place `logger.js` (or `logger.ts`) there
+3. If none exist, ask the user where they want the logger file placed (e.g., `modules/`, `lib/`, `utils/`, etc.)
 
 ## Configuration File Location
 
@@ -82,20 +96,20 @@ Standard Node.js applications use `.env` files. Next.js applications should chec
 
 ### Startup Validation
 
-When the application starts:
+Environment variable validation occurs in the logger configuration file before logger initialization:
 
-1. Load environment variables from `.env` or `.env.local`
-2. Validate all required variables are present
-3. If any required variable is missing:
-   - Log fatal error identifying the specific missing variable
-   - Exit immediately with non-zero exit code
-   - Do NOT proceed with application startup
+1. Validate all required variables are present (`NODE_ENV`, `NAME_APP`, `PATH_TO_LOGS`)
+2. If any required variable is missing:
+   - Output fatal error to stderr identifying the specific missing variable
+   - Exit immediately with non-zero exit code (e.g., `process.exit(1)`)
+   - Do NOT proceed with logger initialization or application startup
 
 ### Logger Implementation
 
-- Logger must be initialized before any other application code
-- Logger configuration should be in `config/logger.js` or `config/logger.ts`
+- Logger must be initialized before any other application code runs
+- Main application file (e.g., `index.js`) should load dotenv first, then require the logger configuration file
 - Export a singleton logger instance for use throughout the application
+- See "Logger File Placement" section for file location guidance
 
 ## Log Levels
 
@@ -131,7 +145,7 @@ Winston log levels (in order of severity):
 
 - [ ] Migrate console statements to logger calls (human task)
 - [ ] Install Winston package: `npm install winston`
-- [ ] Create `config/logger.js` or `config/logger.ts`
+- [ ] Create logger configuration file (see "Logger File Placement" section)
 - [ ] Implement environment variable validation at startup
 - [ ] Configure Winston transports for each mode
 - [ ] Set up file rotation with configured limits

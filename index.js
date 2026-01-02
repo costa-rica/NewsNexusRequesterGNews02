@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 // Initialize Winston logger
-const logger = require("./config/logger");
+const logger = require("./modules/logger");
 
 // Time check: Only run between 20:55 and 21:05 UTC
 const targetTimeToStartAutomation = 21;
