@@ -9,11 +9,13 @@ NewsNexusRequesterGNews02 is a GNews API automation service that replaces earlie
 ## Running the Application
 
 **Development/Testing:**
+
 ```bash
 node index.js
 ```
 
 **Production (with time window check):**
+
 ```bash
 node server.js
 ```
@@ -48,15 +50,8 @@ The `server.js` entry point only runs between 20:55-21:05 UTC and initializes Wi
 
 ### Key Modules
 
-**config/logger.js**
-- Winston logger configuration and initialization
-- Monkey-patches `console.log/error/warn/info/debug` to use Winston
-- Development mode: Colorized console output
-- Production mode: Rotating file logs with timestamps
-- Handles log directory creation and error fallback
-- Format: `[timestamp] [LEVEL] [NewsNexusRequesterGNews02] message {metadata}`
-
 **modules/requestsGNews.js**
+
 - `requester()`: Main orchestration function for a single request
 - `makeGNewsApiRequestDetailed()`: Builds query URL with length constraints, makes fetch call
 - `buildQueryWithinLimit()`: Constructs boolean query from AND/OR/NOT arrays within character limit
@@ -65,6 +60,7 @@ The `server.js` entry point only runs between 20:55-21:05 UTC and initializes Wi
 - `storeGNewsArticles()`: Saves articles to database, avoiding duplicates by URL
 
 **modules/utilitiesMisc.js**
+
 - `createArraysOfParametersNeverRequestedAndRequested()`: Splits Excel parameters into never-requested vs. requested
 - `checkRequestAndModifyDates()`: Adjusts date ranges to avoid re-querying already-covered dates
 - `findEndDateToQueryParameters()`: Looks up latest `dateEndOfRequest` from database for given parameters
@@ -73,6 +69,7 @@ The `server.js` entry point only runs between 20:55-21:05 UTC and initializes Wi
   - Fatal error with clear message if variable is missing
 
 **modules/utilitiesReadAndMakeFiles.js**
+
 - `getRequestsParameterArrayFromExcelFile()`: Reads Excel with columns: id, andString, orString, notString, startDate
   - Uses ExcelJS (migrated from xlsx package for security)
   - Handles both Date objects and Excel serial numbers for dates
@@ -83,6 +80,7 @@ The `server.js` entry point only runs between 20:55-21:05 UTC and initializes Wi
 This app depends on the `newsnexus10db` package (local file dependency: `../NewsNexus10Db`).
 
 **Used Models:**
+
 - `Article`: Stores news articles (url, title, description, publishedDate, etc.)
 - `NewsApiRequest`: Tracks each API request (andString, orString, notString, date ranges, counts)
 - `EntityWhoFoundArticle`: Links aggregator sources to discovery entities
@@ -97,41 +95,41 @@ This application uses **Winston** for production-grade logging with monkey-patch
 ### Configuration
 
 **Development Mode** (`NODE_ENV=development`):
+
 - Console output with colorized formatting
 - All log levels enabled (debug and above)
 - No log files created
 - Format: `HH:mm:ss LEVEL [AppName] message`
 
 **Testing Mode** (`NODE_ENV=testing`):
+
 - File-based logging with rotation
 - Log directory: `PATH_TO_LOGS`
 - File name: `NewsNexusRequesterGNews02.log`
 - Info level and above (error, warn, info, http)
-- Rotation: 10MB per file (configurable via `LOG_MAX_SIZE`)
-- Retention: Last 10 files (configurable via `LOG_MAX_FILES`)
+- Rotation: 5MB per file (configurable via `LOG_MAX_SIZE`)
+- Retention: Last 5 files (configurable via `LOG_MAX_FILES`)
 - Format: `[YYYY-MM-DD HH:mm:ss.SSS] [LEVEL] [AppName] message {metadata}`
 
 **Production Mode** (`NODE_ENV=production`):
+
 - File-based logging with rotation
 - Log directory: `PATH_TO_LOGS`
 - File name: `NewsNexusRequesterGNews02.log`
-- **ERROR level only** (minimizes log volume in production)
-- Rotation: 10MB per file (configurable via `LOG_MAX_SIZE`)
-- Retention: Last 10 files (configurable via `LOG_MAX_FILES`)
+- Rotation: 5MB per file (configurable via `LOG_MAX_SIZE`)
+- Retention: Last 5 files (configurable via `LOG_MAX_FILES`)
 - Format: `[YYYY-MM-DD HH:mm:ss.SSS] [LEVEL] [AppName] message {metadata}`
 
 ### Implementation Details
 
 - **Location**: `config/logger.js`
-- **Initialization**: Required at top of `server.js` (after dotenv)
-- **Monkey-patching**: All `console.*` methods redirected to Winston
 - **Child process spawning**: `runSemanticScorer()` uses `spawn()` to pass environment variables to child
 - **Child process validation**: `runSemanticScorer()` validates `NAME_CHILD_PROCESS_SCORER` before spawning
-- **Error handling**: Falls back to console logging if file system errors occur
 
 ### Log Levels
 
 Winston levels used (in order of severity):
+
 1. `error` - Error conditions requiring attention (logged in all environments)
 2. `warn` - Warning conditions that should be reviewed (logged in development and testing)
 3. `info` - Informational messages about application state (logged in development and testing)
@@ -139,29 +137,34 @@ Winston levels used (in order of severity):
 5. `debug` - Debug-level messages for troubleshooting (logged in development only)
 
 **Environment-Specific Levels:**
+
 - Development: `debug` (captures all levels)
 - Testing: `info` (captures error, warn, info, http)
-- Production: `error` (captures only errors)
+- Production: `info` (captures error, warn, info, http)
 
 ## Important Behaviors
 
 **Query Length Management:**
+
 - GNews imposes a ~370 character total URL limit
 - The app uses `MAX_LENGTH_OF_QUERY_PARAMS` (default 250) to stay under limit
 - `buildQueryWithinLimit()` prioritizes AND terms, OR terms, then adds NOT terms until limit reached
 - Terms with logical operators inside quotes are stripped of quotes to prevent GNews query parsing errors
 
 **Date Window Logic:**
+
 - Default request window: 10 days (hardcoded in `requester()`)
 - If previous request exists, new `startDate` = old `dateEndOfRequest`
 - Never requests beyond today's date
 
 **Error Handling:**
+
 - Failed requests are saved as JSON with `indexMaster` in filename for uniqueness
 - Rate limit errors (`"too many requests"`, `"quota"`, `"request was blocked"`) trigger immediate exit and semantic scorer run
 - Articles without valid response data do not update database
 
 **Automation Control:**
+
 - `ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES=true` to make real requests
 - Set to `false` for dry-run testing (logs URL only)
 
@@ -170,6 +173,7 @@ Winston levels used (in order of severity):
 Required environment variables (see README.md for examples):
 
 **Application Configuration:**
+
 - `NAME_APP`: Application name (e.g., "NewsNexusRequesterGNews02")
 - `NAME_DB`, `PATH_DATABASE`: Database location (inherited from `newsnexus10db`)
 - `PATH_AND_FILENAME_FOR_QUERY_SPREADSHEET_AUTOMATED`: Excel file path
@@ -179,6 +183,7 @@ Required environment variables (see README.md for examples):
 - `PATH_TO_SEMANTIC_SCORER_KEYWORDS_EXCEL_FILE`: Keywords Excel for semantic scorer
 
 **Request Configuration:**
+
 - `ACTIVATE_API_REQUESTS_TO_OUTSIDE_SOURCES`: `true` or `false`
 - `NAME_OF_ORG_REQUESTING_FROM`: `"GNews"`
 - `LIMIT_MASTER_INDEX_OF_WHILE_TRUE_LOOP`: Max iterations (e.g., 200)
@@ -186,6 +191,7 @@ Required environment variables (see README.md for examples):
 - `MAX_LENGTH_OF_QUERY_PARAMS`: Query character limit (e.g., 250)
 
 **Logging Configuration:**
+
 - `NODE_ENV`: `"development"`, `"testing"`, or `"production"` (required)
 - `PATH_TO_LOGS`: Directory for log files (required in production and testing)
 - `LOG_MAX_SIZE`: Max log file size in bytes (optional, default: 10485760 = 10MB)
@@ -197,6 +203,7 @@ Required environment variables (see README.md for examples):
 ## Excel Spreadsheet Format
 
 Required columns:
+
 - `id`: Unique identifier
 - `andString`: Space or quote-delimited AND terms
 - `orString`: Space or quote-delimited OR terms
