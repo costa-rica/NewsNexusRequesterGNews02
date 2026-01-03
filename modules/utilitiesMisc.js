@@ -3,6 +3,7 @@ const {
   NewsArticleAggregatorSource,
 } = require("newsnexus10db");
 const { spawn } = require("child_process");
+const logger = require("./logger");
 
 async function createArraysOfParametersNeverRequestedAndRequested(
   queryObjects
