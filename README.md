@@ -40,7 +40,7 @@ This app requires importing or adding the `newsnexus10db` package, which provide
 
 This application uses **Winston** for production-grade logging with the following features:
 
-- **Child Process Support**: Validates `NAME_CHILD_PROCESS_SCORER` before spawning semantic scorer
+- **Child Process Support**: Validates `NAME_CHILD_PROCESS_SEMANTIC_SCORER` before spawning semantic scorer
 
 ## Environment Variables
 
@@ -74,7 +74,7 @@ NODE_ENV=development
 PATH_TO_LOGS=/Users/nick/Documents/_project_resources/NewsNexus10/logs
 LOG_MAX_SIZE=5
 LOG_MAX_FILES=5
-NAME_CHILD_PROCESS_SCORER=NewsNexusSemanticScorer02
+NAME_CHILD_PROCESS_SEMANTIC_SCORER=NewsNexusSemanticScorer02
 ```
 
 #### ubuntu server
@@ -102,7 +102,7 @@ NODE_ENV=production
 PATH_TO_LOGS=/home/nick/project_resources/NewsNexus10/logs
 LOG_MAX_SIZE=5
 LOG_MAX_FILES=5
-NAME_CHILD_PROCESS_SCORER=NewsNexusSemanticScorer02
+NAME_CHILD_PROCESS_SEMANTIC_SCORER=NewsNexusSemanticScorer02
 ```
 
 ## Excel spreadsheet

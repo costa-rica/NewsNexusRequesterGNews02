@@ -130,12 +130,12 @@ async function findEndDateToQueryParameters(queryParameters) {
 }
 
 async function runSemanticScorer() {
-  // Validate NAME_CHILD_PROCESS_SCORER is set (FATAL ERROR if missing)
-  if (!process.env.NAME_CHILD_PROCESS_SCORER) {
+  // Validate NAME_CHILD_PROCESS_SEMANTIC_SCORER is set (FATAL ERROR if missing)
+  if (!process.env.NAME_CHILD_PROCESS_SEMANTIC_SCORER) {
     logger.error(
-      "FATAL ERROR: Cannot spawn semantic scorer child process - missing NAME_CHILD_PROCESS_SCORER environment variable.\n" +
-        "Please add NAME_CHILD_PROCESS_SCORER to the .env file.\n" +
-        "Example: NAME_CHILD_PROCESS_SCORER=NewsNexusSemanticScorer02"
+      "FATAL ERROR: Cannot spawn semantic scorer child process - missing NAME_CHILD_PROCESS_SEMANTIC_SCORER environment variable.\n" +
+        "Please add NAME_CHILD_PROCESS_SEMANTIC_SCORER to the .env file.\n" +
+        "Example: NAME_CHILD_PROCESS_SEMANTIC_SCORER=NewsNexusSemanticScorer02"
     );
     process.exit(1);
   }
@@ -146,7 +146,7 @@ async function runSemanticScorer() {
 
   return new Promise((resolve, reject) => {
     // Spawn child process with inherited environment variables
-    // This passes PATH_TO_LOGS, LOG_MAX_SIZE, LOG_MAX_FILES, NODE_ENV, and NAME_CHILD_PROCESS_SCORER
+    // This passes PATH_TO_LOGS, LOG_MAX_SIZE, LOG_MAX_FILES, NODE_ENV, and NAME_CHILD_PROCESS_SEMANTIC_SCORER
     const child = spawn(
       "node",
       [process.env.PATH_AND_FILENAME_TO_SEMANTIC_SCORER],

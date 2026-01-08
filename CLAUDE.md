@@ -65,7 +65,7 @@ The `server.js` entry point only runs between 20:55-21:05 UTC and initializes Wi
 - `checkRequestAndModifyDates()`: Adjusts date ranges to avoid re-querying already-covered dates
 - `findEndDateToQueryParameters()`: Looks up latest `dateEndOfRequest` from database for given parameters
 - `runSemanticScorer()`: Spawns semantic scorer child process and exits
-  - **Validation**: Checks for `NAME_CHILD_PROCESS_SCORER` environment variable before spawning
+  - **Validation**: Checks for `NAME_CHILD_PROCESS_SEMANTIC_SCORER` environment variable before spawning
   - Fatal error with clear message if variable is missing
 
 **modules/utilitiesReadAndMakeFiles.js**
@@ -124,7 +124,7 @@ This application uses **Winston** for production-grade logging with monkey-patch
 
 - **Location**: `config/logger.js`
 - **Child process spawning**: `runSemanticScorer()` uses `spawn()` to pass environment variables to child
-- **Child process validation**: `runSemanticScorer()` validates `NAME_CHILD_PROCESS_SCORER` before spawning
+- **Child process validation**: `runSemanticScorer()` validates `NAME_CHILD_PROCESS_SEMANTIC_SCORER` before spawning
 
 ### Log Levels
 
@@ -196,7 +196,7 @@ Required environment variables (see README.md for examples):
 - `PATH_TO_LOGS`: Directory for log files (required in production and testing)
 - `LOG_MAX_SIZE`: Max log file size in bytes (optional, default: 10485760 = 10MB)
 - `LOG_MAX_FILES`: Max number of log files to retain (optional, default: 10)
-- `NAME_CHILD_PROCESS_SCORER`: Child process name for semantic scorer (required, e.g., "NewsNexusSemanticScorer02")
+- `NAME_CHILD_PROCESS_SEMANTIC_SCORER`: Child process name for semantic scorer (required, e.g., "NewsNexusSemanticScorer02")
   - **Important**: Application will exit with fatal error if this variable is missing when spawning child process
   - Child process inherits all environment variables from parent (including `PATH_TO_LOGS`, `LOG_MAX_SIZE`, `LOG_MAX_FILES`, `NODE_ENV`)
 
