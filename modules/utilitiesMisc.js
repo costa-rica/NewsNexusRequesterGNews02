@@ -154,22 +154,9 @@ async function runSemanticScorer() {
         env: {
           ...process.env, // Inherit all environment variables from parent
         },
-        stdio: ["inherit", "pipe", "pipe"], // Inherit stdin, pipe stdout/stderr
+        stdio: ["inherit", "inherit", "inherit"], // Child handles its own stdio independently
       }
     );
-
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout.on("data", (data) => {
-      stdout += data.toString();
-      logger.info(data.toString().trim());
-    });
-
-    child.stderr.on("data", (data) => {
-      stderr += data.toString();
-      logger.error(data.toString().trim());
-    });
 
     child.on("error", (error) => {
       logger.error(`Error spawning child process: ${error.message}`);
@@ -179,7 +166,7 @@ async function runSemanticScorer() {
     child.on("close", (code) => {
       if (code === 0) {
         logger.info(`Child process finished with exit code ${code}`);
-        resolve(stdout);
+        resolve();
       } else {
         logger.error(`Child process exited with code ${code}`);
         reject(new Error(`Child process exited with code ${code}`));
