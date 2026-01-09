@@ -153,6 +153,7 @@ async function runSemanticScorer() {
       {
         env: {
           ...process.env, // Inherit all environment variables from parent
+          NAME_APP: process.env.NAME_CHILD_PROCESS_SEMANTIC_SCORER, // Pass child process name
         },
         stdio: ["inherit", "inherit", "inherit"], // Child handles its own stdio independently
       }
